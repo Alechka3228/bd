@@ -1,4 +1,5 @@
-Select sum(P.weight) FROM
-  "Rooms" R Join "Racks" Ra On Ra.room_id = room.id
-  Join "Storages" S On S.shelf_id = Ra.shelf_id
-  Join "Products" P On S.storage_id = P.storage_id;
+-- 0
+SELECT sum(p.weight) FROM rooms r 
+  JOIN racks ra ON ra.room_id = r.id
+  JOIN storages s ON s.shelf_id = ra.id
+  JOIN products p ON p.storage_id = s.id
