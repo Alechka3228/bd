@@ -16,3 +16,15 @@ WITH cl_sh as (
 
 SELECT * FROM cl_sh
 LIMIT 3;
+
+-- 2
+WITH zagr as (
+    SELECT ROUND(COUNT(p.id)::NUMERIC / ra.capacity, 2) AS "Загруженность",
+    ra.id FROM rooms r 
+    JOIN racks ra ON ra.room_id = r.id
+    JOIN storages s ON s.shelf_id = ra.id
+    JOIN products p ON p.storage_id = s.id
+  GROUP BY ra.id
+)
+
+SELECT * FROM zagr;
