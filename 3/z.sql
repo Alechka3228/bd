@@ -28,3 +28,16 @@ WITH zagr as (
 )
 
 SELECT * FROM zagr;
+
+-- 4
+WITH to_change as (
+  SELECT c.id FROM contracts c
+  JOIN clients cl ON cl.id = c.client_id
+  WHERE cl.client_name = 'ООО "Рога и копыта"'
+)
+
+UPDATE contracts
+  SET expiry_date = expiry_date + INTERVAL '1 month'
+  FROM to_change as tc
+  WHERE contracts.id = tc.id
+RETURNING *;
