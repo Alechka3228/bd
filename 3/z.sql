@@ -41,3 +41,8 @@ UPDATE contracts
   FROM to_change as tc
   WHERE contracts.id = tc.id
 RETURNING *;
+
+-- 5
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS
+  fragility BOOLEAN DEFAULT FALSE;
