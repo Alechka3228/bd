@@ -46,3 +46,9 @@ RETURNING *;
 ALTER TABLE products
   ADD COLUMN IF NOT EXISTS
   fragility BOOLEAN DEFAULT FALSE;
+
+-- 6 
+-- Вызывать 1 раз иначе ошибка
+-- ALTER TABLE products
+--   ADD CONSTRAINT
+--   chk_product_weight_max CHECK (weight <= 500);
