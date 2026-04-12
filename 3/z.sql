@@ -1,57 +1,77 @@
--- 0
-SELECT sum(p.weight) FROM rooms r 
-  JOIN racks ra ON ra.room_id = r.id
-  JOIN storages s ON s.shelf_id = ra.id
-  JOIN products p ON p.storage_id = s.id;
+DO $$
+BEGIN
+  BEGIN;
 
--- 1
-WITH cl_sh as (
-  SELECT sum(p.height * p.width * p.length), c.client_id FROM rooms r 
+  -- 0
+  SELECT sum(p.weight) FROM rooms r 
     JOIN racks ra ON ra.room_id = r.id
     JOIN storages s ON s.shelf_id = ra.id
-    JOIN products p ON p.storage_id = s.id
-    JOIN contracts c ON c.client_id = p.contract_id
-    GROUP BY c.client_id
-)
+    JOIN products p ON p.storage_id = s.id;
 
-SELECT * FROM cl_sh
-LIMIT 3;
+  -- 1
+  WITH cl_sh as (
+    SELECT sum(p.height * p.width * p.length), c.client_id FROM rooms r 
+      JOIN racks ra ON ra.room_id = r.id
+      JOIN storages s ON s.shelf_id = ra.id
+      JOIN products p ON p.storage_id = s.id
+      JOIN contracts c ON c.client_id = p.contract_id
+      GROUP BY c.client_id
+  )
 
--- 2
-WITH zagr as (
+  SELECT * FROM cl_sh
+  LIMIT 3;
+
+  -- 2
+  WITH zagr as (
     SELECT ROUND(COUNT(p.id)::NUMERIC / ra.capacity, 2) AS "Загруженность",
-    ra.id FROM rooms r 
-    JOIN racks ra ON ra.room_id = r.id
-    JOIN storages s ON s.shelf_id = ra.id
-    JOIN products p ON p.storage_id = s.id
-  GROUP BY ra.id
-)
+      ra.id FROM rooms r 
+      JOIN racks ra ON ra.room_id = r.id
+      JOIN storages s ON s.shelf_id = ra.id
+      JOIN products p ON p.storage_id = s.id
+      GROUP BY ra.id
+  )
 
-SELECT * FROM zagr;
+  SELECT * FROM zagr;
 
--- 3
-BEGIN;
-WITH racks_to_delete AS (
-  SELECT ra.id FROM racks ra
-  WHERE ra.max_weight < 100
-),
-products_to_delete AS (
-  SELECT p.id FROM products p
-  JOIN storages s ON p.storage_id = s.id
-  JOIN racks_to_delete rtd ON s.shelf_id = rtd.id
-)
-DELETE FROM products
-WHERE id IN (SELECT id FROM products_to_delete);
-COMMIT;
+  -- 3
+  WITH racks_to_delete AS (
+    SELECT ra.id FROM racks ra
+    WHERE ra.max_weight < 100
+  ),
+  products_to_delete AS (
+    SELECT p.id FROM products p
+    JOIN storages s ON p.storage_id = s.id
+    JOIN racks_to_delete rtd ON s.shelf_id = rtd.id
+  )
+  DELETE FROM products
+  WHERE id IN (SELECT id FROM products_to_delete);
 
--- 4
-BEGIN;
-WITH contracts_to_update AS (
-  SELECT c.id FROM contracts c
-  JOIN clients cl ON cl.id = c.client_id
-  WHERE cl.client_name = 'ООО "Рога и копыта"'
-)
-UPDATE contracts
-SET expiry_date = expiry_date + INTERVAL '1 month'
-WHERE id IN (SELECT id FROM contracts_to_update);
-COMMIT;
+  -- 4
+  WITH to_change as (
+    SELECT c.id FROM contracts c
+      JOIN clients cl ON cl.id = c.client_id
+      WHERE cl.client_name = 'ООО "Рога и копыта"'
+  )
+
+  UPDATE contracts
+  SET expiry_date = expiry_date + INTERVAL '1 month'
+  FROM to_change as tc
+  WHERE contracts.id = tc.id
+  RETURNING *;
+
+  -- 5
+  ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS
+    fragility BOOLEAN DEFAULT FALSE;
+
+  -- 6
+  ALTER TABLE products
+    ADD CONSTRAINT
+    chk_product_weight_max CHECK (weight <= 500);
+
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    RAISE;
+END $$;
