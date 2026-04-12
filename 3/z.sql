@@ -29,26 +29,29 @@ WITH zagr as (
 
 SELECT * FROM zagr;
 
+-- 3
+BEGIN;
+WITH racks_to_delete AS (
+  SELECT ra.id FROM racks ra
+  WHERE ra.max_weight < 100
+),
+products_to_delete AS (
+  SELECT p.id FROM products p
+  JOIN storages s ON p.storage_id = s.id
+  JOIN racks_to_delete rtd ON s.shelf_id = rtd.id
+)
+DELETE FROM products
+WHERE id IN (SELECT id FROM products_to_delete);
+COMMIT;
+
 -- 4
-WITH to_change as (
+BEGIN;
+WITH contracts_to_update AS (
   SELECT c.id FROM contracts c
   JOIN clients cl ON cl.id = c.client_id
   WHERE cl.client_name = 'ООО "Рога и копыта"'
 )
-
 UPDATE contracts
-  SET expiry_date = expiry_date + INTERVAL '1 month'
-  FROM to_change as tc
-  WHERE contracts.id = tc.id
-RETURNING *;
-
--- 5
-ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS
-  fragility BOOLEAN DEFAULT FALSE;
-
--- 6 
--- Вызывать 1 раз иначе ошибка
--- ALTER TABLE products
---   ADD CONSTRAINT
---   chk_product_weight_max CHECK (weight <= 500);
+SET expiry_date = expiry_date + INTERVAL '1 month'
+WHERE id IN (SELECT id FROM contracts_to_update);
+COMMIT;
