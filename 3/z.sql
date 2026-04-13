@@ -1,10 +1,11 @@
-BEGIN;
+SELECT '---------0---------';
 -- 0
 SELECT sum(p.weight) FROM rooms r 
   JOIN racks ra ON ra.room_id = r.id
   JOIN storages s ON s.shelf_id = ra.id
   JOIN products p ON p.storage_id = s.id;
 
+SELECT '---------1---------';
 -- 1
 WITH cl_sh AS (
   SELECT sum(p.height * p.width * p.length) AS total_volume, c.client_id 
@@ -16,8 +17,10 @@ WITH cl_sh AS (
   GROUP BY c.client_id
 )
 SELECT * FROM cl_sh
+ORDER by total_volume DESC
 LIMIT 3;
 
+SELECT '---------2---------';
 -- 2
 WITH zagr AS (
   SELECT ROUND(COUNT(p.id)::NUMERIC / ra.capacity, 2) AS "Загруженность",
@@ -30,6 +33,7 @@ WITH zagr AS (
 )
 SELECT * FROM zagr;
 
+SELECT '---------3---------';
 -- 3
 WITH racks_to_delete AS (
   SELECT ra.id FROM racks ra
@@ -41,25 +45,32 @@ products_to_delete AS (
   JOIN racks_to_delete rtd ON s.shelf_id = rtd.id
 )
 DELETE FROM products
-WHERE id IN (SELECT id FROM products_to_delete);
+WHERE id IN (SELECT id FROM products_to_delete)
+RETURNING *;
 
+SELECT '---------4---------';
 -- 4
 WITH to_change AS (
   SELECT c.id FROM contracts c
     JOIN clients cl ON cl.id = c.client_id
     WHERE cl.client_name = 'ООО "Рога и копыта"'
 )
+
 UPDATE contracts
 SET expiry_date = expiry_date + INTERVAL '1 month'
 FROM to_change AS tc
 WHERE contracts.id = tc.id
 RETURNING *;
 
+SELECT '---------5---------';
 -- 5
 ALTER TABLE products
   ADD COLUMN IF NOT EXISTS
   fragility BOOLEAN DEFAULT FALSE;
 
+SELECT * FROM products LIMIT 1;
+
+SELECT '---------6---------';
 -- 6
 ALTER TABLE products
   ADD CONSTRAINT
