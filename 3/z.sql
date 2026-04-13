@@ -8,17 +8,17 @@ SELECT sum(p.weight) FROM rooms r
 SELECT '---------1---------';
 -- 1
 WITH cl_sh AS (
-  SELECT sum(p.height * p.width * p.length) AS total_volume, c.client_id 
+  SELECT sum(p.height * p.width * p.length) AS total_volume, c.client_id, count(p.id) as "count"
   FROM rooms r 
     JOIN racks ra ON ra.room_id = r.id
     JOIN storages s ON s.shelf_id = ra.id
     JOIN products p ON p.storage_id = s.id
     JOIN contracts c ON c.client_id = p.contract_id
-  GROUP BY c.client_id
+  GROUP BY c.client_id 
 )
 SELECT * FROM cl_sh
-ORDER by total_volume DESC
-LIMIT 3;
+ORDER by total_volume DESC, "count" DESC
+LIMIT 5;
 
 SELECT '---------2---------';
 -- 2
@@ -60,7 +60,7 @@ UPDATE contracts
 SET expiry_date = expiry_date + INTERVAL '1 month'
 FROM to_change AS tc
 WHERE contracts.id = tc.id
-RETURNING *;
+RETURNING contracts.id, client_id, expiry_date;
 
 SELECT '---------5---------';
 -- 5
