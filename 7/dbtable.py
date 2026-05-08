@@ -40,7 +40,7 @@ class DbTable:
         return
 
     def drop(self):
-        sql = "DROP TABLE IF EXISTS " + self.table_name()
+        sql = "DROP TABLE IF EXISTS " + self.table_name() + " CASCADE"
         cur = self.dbconn.conn.cursor()
         cur.execute(sql)
         self.dbconn.conn.commit()

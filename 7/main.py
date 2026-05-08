@@ -6,6 +6,7 @@ from project_config import *
 from dbconnection import *
 from tables.rooms_table import *
 from tables.racks_table import *
+from help import *
 
 
 class Main:
@@ -26,14 +27,20 @@ class Main:
 
     def db_insert_somethings(self):
         rooms_table = RoomsTable()
-        rooms_table.insert_one(["Test", "Test", "Test"])
-        rooms_table.insert_one(["Test2", "Test2", "Test2"])
-        rooms_table.insert_one(["Test3", "Test3", "Test3"])
+        rooms_table.insert_one(["Склад1", 65, 18, 26, 30, 70])
+        rooms_table.insert_one(["Склад2", 45, 16, 24, 40, 60])
+        rooms_table.insert_one(["Склад3", 30, 15, 28, 20, 80])
 
         racks_table = RacksTable()
-        racks_table.insert_one([1, "123"])
-        racks_table.insert_one([2, "123"])
-        racks_table.insert_one([3, "123"])
+        racks_table.insert_one([1, 10, 500])
+        racks_table.insert_one([1, 15, 750])
+        racks_table.insert_one([1, 20, 1000])
+        racks_table.insert_one([2, 8, 400])
+        racks_table.insert_one([2, 12, 600])
+        racks_table.insert_one([2, 18, 900])
+        racks_table.insert_one([3, 10, 500])
+        racks_table.insert_one([3, 10, 500])
+        racks_table.insert_one([3, 25, 1200])
 
     def db_drop(self):
         rooms_table = RoomsTable()
@@ -46,23 +53,42 @@ class Main:
         menu = """Добро пожаловать! 
 Основное меню (выберите цифру в соответствии с необходимым действием): 
     1 - сброс и инициализация таблиц;
-    9 - выход."""
+    q - выход."""
         print(menu)
         return
 
+    def drop_init_with_somethings(self):
+        self.db_drop()
+        self.db_init()
+        self.db_insert_somethings()
+
     def read_next_step(self):
-        return input("=> ").strip()
+        return safety_input("=> ").strip()
 
     def main_cycle(self):
         current_menu = "0"
-        next_step = None
-        while current_menu != "9":
+        while current_menu != "q":
             if current_menu == "0":
-                next_step = self.read_next_step()
+                self.drop_init_with_somethings()
             elif current_menu == "1":
-                next_step = self.read_next_step()
+                pass
             elif current_menu == "2":
-                next_step = self.read_next_step()
+                pass
+            elif current_menu == "3":
+                pass
+            elif current_menu == "4":
+                pass
+            elif current_menu == "5":
+                pass
+            elif current_menu == "6":
+                pass
+            else:
+                print_that_user_is_disabled("Такого варианта нет")
+
+            self.show_main_menu()
+            current_menu = self.read_next_step()
+
+        # q
         print("До свидания!")
         return
 

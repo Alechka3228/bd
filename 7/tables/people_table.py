@@ -20,4 +20,3 @@ class PeopleTable(DbTable):
         cur = self.dbconn.conn.cursor()
         cur.execute(sql, {"offset": num - 1})
         return cur.fetchone()       
-    
