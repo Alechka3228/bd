@@ -1,10 +1,12 @@
 import sys
-sys.path.append('tables')
+
+sys.path.append("tables")
 
 from project_config import *
 from dbconnection import *
 from tables.people_table import *
 from tables.phones_table import *
+
 
 class Main:
 
@@ -63,7 +65,7 @@ class Main:
             return "0"
         else:
             return next_step
-            
+
     def show_people(self):
         self.person_id = -1
         menu = """Просмотр списка людей!
@@ -104,14 +106,18 @@ class Main:
         if data[0] == "1":
             return
         while len(data[0].strip()) == 0:
-            data[0] = input("Имя не может быть пустым! Введите имя заново (1 - отмена):").strip()
+            data[0] = input(
+                "Имя не может быть пустым! Введите имя заново (1 - отмена):"
+            ).strip()
             if data[0] == "1":
                 return
         data.append(input("Введите фамилию (1 - отмена): ").strip())
         if data[1] == "1":
             return
         while len(data[1].strip()) == 0:
-            data[1] = input("Фамилия не может быть пустой! Введите фамилию заново (1 - отмена):").strip()
+            data[1] = input(
+                "Фамилия не может быть пустой! Введите фамилию заново (1 - отмена):"
+            ).strip()
             if data[1] == "1":
                 return
         data.append(input("Введите отчество (1 - отмена):").strip())
@@ -123,9 +129,13 @@ class Main:
     def show_phones_by_people(self):
         if self.person_id == -1:
             while True:
-                num = input("Укажите номер строки, в которой записана интересующая Вас персона (0 - отмена):")
+                num = input(
+                    "Укажите номер строки, в которой записана интересующая Вас персона (0 - отмена):"
+                )
                 while len(num.strip()) == 0:
-                    num = input("Пустая строка. Повторите ввод! Укажите номер строки, в которой записана интересующая Вас персона (0 - отмена):")
+                    num = input(
+                        "Пустая строка. Повторите ввод! Укажите номер строки, в которой записана интересующая Вас персона (0 - отмена):"
+                    )
                 if num == "0":
                     return "1"
                 person = PeopleTable().find_by_position(int(num))
@@ -135,7 +145,14 @@ class Main:
                     self.person_id = int(person[1])
                     self.person_obj = person
                     break
-        print("Выбран человек: " + self.person_obj[2] + " " + self.person_obj[0] + " " + self.person_obj[3])
+        print(
+            "Выбран человек: "
+            + self.person_obj[2]
+            + " "
+            + self.person_obj[0]
+            + " "
+            + self.person_obj[3]
+        )
         print("Телефоны:")
         lst = PhonesTable().all_by_person_id(self.person_id)
         for i in lst:
@@ -154,7 +171,7 @@ class Main:
     def main_cycle(self):
         current_menu = "0"
         next_step = None
-        while(current_menu != "9"):
+        while current_menu != "9":
             if current_menu == "0":
                 self.show_main_menu()
                 next_step = self.read_next_step()
@@ -168,15 +185,15 @@ class Main:
             elif current_menu == "3":
                 self.show_add_person()
                 current_menu = "1"
-        print("До свидания!")    
+        print("До свидания!")
         return
 
     def test(self):
         DbTable.dbconn.test()
 
+
 m = Main()
 # Откоментируйте эту строку и закоментируйте следующую для теста
 # соединения с БД
-# m.test()
+m.test()
 m.main_cycle()
-    
