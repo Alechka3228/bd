@@ -12,9 +12,11 @@ class Main:
 
     def __init__(self):
         DbTable.dbconn = self.connection
-        self.current_room_id = None      # для помещения, у которого смотрим стеллажи
-        self.current_room_record = None
 
+    def main_cycle():
+        pass
+    
 if __name__ == "__main__":
     m = Main()
     m.main_cycle()
+    print(52)
