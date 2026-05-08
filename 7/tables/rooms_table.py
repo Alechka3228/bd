@@ -7,7 +7,8 @@ class RoomsTable(DbTable):
         return self.dbconn.prefix + "rooms"
 
     def columns(self):
-        return {"room_name": ["varchar(128)", "NOT NULL"],
+        return {"id": ["serial", "PRIMARY KEY"],
+                "room_name": ["varchar(128)", "NOT NULL"],
                 "volume": ["numeric", "NOT NULL DEFAULT 1"],
                 "min_temp": ["numeric", "NOT NULL DEFAULT -30"],
                 "max_temp": ["numeric", "NOT NULL DEFAULT 30"],
@@ -24,21 +25,3 @@ class RoomsTable(DbTable):
                 "CONSTRAINT chk_room_humid_range CHECK (min_humid <= max_humid)",
                 "CONSTRAINT chk_room_temp_bounds CHECK (min_temp >= -50 AND max_temp <= 60)",
                 "CONSTRAINT chk_room_humid_bounds CHECK (min_humid >= 0 AND max_humid <= 100)"]
-
-    def all_by_room_name(self, name):
-        """Получить все помещения по имени (частичное совпадение)"""
-        sql = "SELECT * FROM " + self.table_name()
-        sql += " WHERE room_name LIKE %s"
-        sql += " ORDER BY room_name"
-        cur = self.dbconn.conn.cursor()
-        cur.execute(sql, ('%' + name + '%',))
-        return cur.fetchall()
-
-    def get_by_temp_range(self, min_temp, max_temp):
-        """Получить помещения, подходящие по температурному диапазону"""
-        sql = "SELECT * FROM " + self.table_name()
-        sql += " WHERE min_temp <= %s AND max_temp >= %s"
-        sql += " ORDER BY id"
-        cur = self.dbconn.conn.cursor()
-        cur.execute(sql, (min_temp, max_temp))
-        return cur.fetchall()
