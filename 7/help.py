@@ -1,5 +1,14 @@
 from random import randrange
 
+# menus
+main_menu = [["1", "Убить поднять заполнить"],
+             ["2", "Работа с помещениями"],
+             ["3", "Работа с стелажами"],
+             ["q", "На выход"]]
+room_manipulation_menu = [["1", "Добить"],
+             ["2", "Изменить"],
+             ["3", "Удалить"]]
+
 def print_that_user_is_disabled(message: str) -> None:
     consolations = [
         "Глупость? Нет, это такой секретный шифр?.. Если нет, просто введи, пожалуйста, правильно.",
@@ -162,6 +171,9 @@ def check_done(func):
         try:
             func(*args, **kwargs)
             print("\nDone\n")
-        except Exception:
-            print("Not done")
+        except Exception as e:
+            print()
+            print("Not done or done with error")
+            print(f"Error: {e}")
+            print()
     return wrapper

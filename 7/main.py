@@ -40,7 +40,7 @@ class Main:
         racks_table.insert_one([2, 18, 900])
         racks_table.insert_one([3, 10, 500])
         racks_table.insert_one([3, 10, 500])
-        racks_table.insert_one([3, 25, 1200])
+        racks_table.insert_one(["3", 25, 1200])
 
     def db_drop(self):
         rooms_table = RoomsTable()
@@ -48,12 +48,13 @@ class Main:
         racks_table.drop()
         rooms_table.drop()
         return
-
-    def show_main_menu(self):
+    
+    def show_menu(self, points):
         menu = """Добро пожаловать! 
-Основное меню (выберите цифру в соответствии с необходимым действием): 
-    1 - сброс и инициализация таблиц;
-    q - выход."""
+Основное меню (выберите цифру в соответствии с необходимым действием): """
+        for i in points:
+            menu += "\n" + i[0] + " " # что жмать
+            menu += i[1] + ";" # что делать будет 
         print(menu)
         return
 
@@ -63,18 +64,44 @@ class Main:
         self.db_init()
         self.db_insert_somethings()
 
+    @check_done
+    def manipulations_with_rooms(self):
+        self.show_menu(room_manipulation_menu)
+        choice = input("=> ").strip()
+        if choice == "1":
+            pass
+        elif choice == "2":
+            pass
+        elif choice == "3":
+            pass
+        else:
+            print_that_user_is_disabled("Такого варианта нет")
+
+    @check_done
+    def manipulations_with_racks(self):
+        self.show_menu(room_manipulation_menu)
+        choice = input("=> ").strip()
+        if choice == "1":
+            pass
+        elif choice == "2":
+            pass
+        elif choice == "3":
+            pass
+        else:
+            print_that_user_is_disabled("Такого варианта нет")
+
     def read_next_step(self):
         return safety_input("=> ").strip()
 
     def main_cycle(self):
-        self.show_main_menu()
+        self.show_menu(main_menu)
         current_menu = self.read_next_step()
-        
+
         while current_menu != "q":
             if current_menu == "1":
                 self.drop_init_with_somethings()
             elif current_menu == "2":
-                pass
+                self.manipulations_with_rooms()
             elif current_menu == "3":
                 pass
             elif current_menu == "4":
@@ -86,7 +113,7 @@ class Main:
             else:
                 print_that_user_is_disabled("Такого варианта нет")
 
-            self.show_main_menu()
+            self.show_menu(main_menu)
             current_menu = self.read_next_step()
 
         # q
