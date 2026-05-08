@@ -3,8 +3,8 @@ sys.path.append('tables')
 
 from project_config import *
 from dbconnection import *
-from people_table import *
-from phones_table import *
+from tables.people_table import *
+from tables.phones_table import *
 
 class Main:
 
