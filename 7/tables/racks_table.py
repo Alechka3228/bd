@@ -12,6 +12,18 @@ class RacksTable(DbTable):
                 "capacity": ["integer", "NOT NULL"],
                 "max_weight": ["numeric", "NOT NULL"]}
     
+    def column_names(self):
+        return ["id",
+                "room_id",
+                "capacity",
+                "max_weight"]
+    
+    def column_names_without_id(self):
+        return ["room_id",
+                "capacity",
+                "max_weight"]
+    
+    
     def primary_key(self):
         return ['id']    
 

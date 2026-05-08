@@ -57,6 +57,7 @@ class Main:
         print(menu)
         return
 
+    @check_done
     def drop_init_with_somethings(self):
         self.db_drop()
         self.db_init()
@@ -66,12 +67,12 @@ class Main:
         return safety_input("=> ").strip()
 
     def main_cycle(self):
-        current_menu = "0"
+        self.show_main_menu()
+        current_menu = self.read_next_step()
+        
         while current_menu != "q":
-            if current_menu == "0":
+            if current_menu == "1":
                 self.drop_init_with_somethings()
-            elif current_menu == "1":
-                pass
             elif current_menu == "2":
                 pass
             elif current_menu == "3":

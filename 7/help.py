@@ -156,3 +156,12 @@ def safety_input(before_prompt: str) -> str:
         return ""
     else:
         return string
+    
+def check_done(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+            print("\nDone\n")
+        except Exception:
+            print("Not done")
+    return wrapper

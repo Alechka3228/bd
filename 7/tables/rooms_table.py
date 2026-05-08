@@ -15,6 +15,23 @@ class RoomsTable(DbTable):
                 "min_humid": ["numeric", "NOT NULL DEFAULT 0"],
                 "max_humid": ["numeric", "NOT NULL DEFAULT 100"]}
     
+    def column_names(self):
+        return ["id",
+                "room_name",
+                "volume",
+                "min_temp",
+                "max_temp",
+                "min_humid",
+                "max_humid"]
+    
+    def column_names_without_id(self):
+        return ["room_name",
+                "volume",
+                "min_temp",
+                "max_temp",
+                "min_humid",
+                "max_humid"]
+    
     def primary_key(self):
         return ['id']    
 
