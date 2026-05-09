@@ -44,42 +44,47 @@ class DbTable:
         return
 
     def drop(self):
-        sql = (
-            "DROP TABLE IF EXISTS " + self.table_name() + " CASCADE"
-        )  # ну чтобы наверняка
+        sql = "DROP TABLE IF EXISTS " + self.table_name() + " CASCADE"
         cur = self.dbconn.conn.cursor()
         cur.execute(sql)
         self.dbconn.conn.commit()
         return
 
     def insert_one(self, vals):
-        for i in range(0, len(vals)):
-            if type(vals[i]) is str:
-                vals[i] = "'" + vals[i] + "'"
-            else:
-                vals[i] = str(vals[i])
+        # Используем параметризованный запрос для защиты от SQL-инъекций
+        columns = self.column_names_without_id()
+        placeholders = ", ".join(["%s"] * len(vals))
         sql = "INSERT INTO " + self.table_name() + "("
-        sql += ", ".join(self.column_names_without_id()) + ") VALUES("
-        sql += ", ".join(vals) + ")"
+        sql += ", ".join(columns) + ") VALUES("
+        sql += placeholders + ")"
         cur = self.dbconn.conn.cursor()
-        cur.execute(sql)
+        cur.execute(sql, vals)
         self.dbconn.conn.commit()
         return
 
-    def first(self):
-        sql = "SELECT * FROM " + self.table_name()
-        sql += " ORDER BY "
-        sql += ", ".join(self.primary_key())
+    def update_one(self, id_value, vals):
+        """Обновление записи по id"""
+        columns = self.column_names_without_id()
+        set_clause = ", ".join([f"{col} = %s" for col in columns])
+        sql = f"UPDATE {self.table_name()} SET {set_clause} WHERE {self.primary_key()[0]} = %s"
         cur = self.dbconn.conn.cursor()
-        cur.execute(sql)
-        return cur.fetchone()
+        cur.execute(sql, vals + [id_value])
+        self.dbconn.conn.commit()
+        return cur.rowcount
 
-    def last(self):
-        sql = "SELECT * FROM " + self.table_name()
-        sql += " ORDER BY "
-        sql += ", ".join([x + " DESC" for x in self.primary_key()])
+    def delete_one(self, id_value):
+        """Удаление записи по id"""
+        sql = f"DELETE FROM {self.table_name()} WHERE {self.primary_key()[0]} = %s"
         cur = self.dbconn.conn.cursor()
-        cur.execute(sql)
+        cur.execute(sql, [id_value])
+        self.dbconn.conn.commit()
+        return cur.rowcount
+
+    def find_by_id(self, id_value):
+        """Поиск записи по id"""
+        sql = f"SELECT * FROM {self.table_name()} WHERE {self.primary_key()[0]} = %s"
+        cur = self.dbconn.conn.cursor()
+        cur.execute(sql, [id_value])
         return cur.fetchone()
 
     def all(self):
@@ -90,10 +95,32 @@ class DbTable:
         cur.execute(sql)
         return cur.fetchall()
 
+    def get_all_with_row_numbers(self):
+        """Возвращает список записей с порядковыми номерами"""
+        records = self.all()
+        return [(i + 1,) + record for i, record in enumerate(records)]
+
     def print_all(self):
         table = self.all()
-        width = 10
+        if not table:
+            print("Нет записей")
+            return
+        width = 20
         print(" | ".join(f"{col[:width]:^{width}}" for col in self.column_names()))
         print("-" * (len(self.column_names()) * (width + 3) - 3))
         for line in table:
             print(" | ".join(f"{str(val)[:width]:^{width}}" for val in line))
+
+    def print_with_row_numbers(self):
+        """Вывод таблицы с порядковыми номерами строк"""
+        records = self.all()
+        if not records:
+            print("Нет записей")
+            return
+        col_names = ["№"] + self.column_names()
+        width = 15
+        print(" | ".join(f"{col[:width]:^{width}}" for col in col_names))
+        print("-" * (len(col_names) * (width + 3) - 3))
+        for i, record in enumerate(records, 1):
+            row = [str(i)] + [str(val) for val in record]
+            print(" | ".join(f"{val[:width]:^{width}}" for val in row))

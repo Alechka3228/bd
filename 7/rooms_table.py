@@ -29,8 +29,34 @@ class RoomsTable(DbTable):
             "CONSTRAINT chk_room_humid_bounds CHECK (min_humid >= 0 AND max_humid <= 100)",
         ]
 
+    def get_room_choices(self):
+        """Возвращает список помещений для выбора (номер_строки, id, имя)"""
+        records = self.all()
+        return [(i + 1, record[0], record[1]) for i, record in enumerate(records)]
+
+    def select_room_by_user(self, prompt="Выберите помещение"):
+        """Позволяет пользователю выбрать помещение по номеру строки"""
+        choices = self.get_room_choices()
+        if not choices:
+            print("Нет доступных помещений")
+            return None
+        print(f"\n{prompt}:")
+        for num, room_id, name in choices:
+            print(f"  {num}. {name}")
+        try:
+            choice = int(safety_input("=> Номер: "))
+            for num, room_id, name in choices:
+                if num == choice:
+                    return room_id
+            print("Неверный выбор")
+            return None
+        except ValueError:
+            print("Введите число")
+            return None
+
     def manual_insert(self):
         vals = []
+        print("\n--- Добавление нового помещения ---")
         for number, column in enumerate(self.column_names_without_id()):
             print(f"{number + 1}. {column}")
             vals.append(safety_input("=> "))
@@ -38,80 +64,120 @@ class RoomsTable(DbTable):
         if len(vals) != 6:
             raise ValueError(f"Ожидается 6 значений, получено {len(vals)}")
 
-        try:
-            room_name = str(vals[0])
-            if len(room_name) > 128:
-                raise ValueError(f"room_name превышает 128 символов: {len(room_name)}")
-        except (ValueError, TypeError) as e:
-            raise TypeError(
-                f"room_name должна быть строкой, получен {type(vals[0]).__name__}"
-            ) from e
+        # Валидация
+        room_name = str(vals[0])
+        if len(room_name) > 128:
+            raise ValueError(f"room_name превышает 128 символов: {len(room_name)}")
 
-        try:
-            volume = float(vals[1])
-            if volume <= 0:
-                raise ValueError(f"volume должно быть > 0, получено {volume}")
-        except (ValueError, TypeError):
-            raise TypeError(
-                f"volume должно быть числом, получен {type(vals[1]).__name__}"
-            )
+        volume = float(vals[1])
+        if volume <= 0:
+            raise ValueError(f"volume должно быть > 0, получено {volume}")
 
-        try:
-            min_temp = float(vals[2])
-            if min_temp < -50:
-                raise ValueError(
-                    f"min_temp не может быть меньше -50, получено {min_temp}"
-                )
-        except (ValueError, TypeError):
-            raise TypeError(
-                f"min_temp должно быть числом, получен {type(vals[2]).__name__}"
-            )
+        min_temp = float(vals[2])
+        if min_temp < -50:
+            raise ValueError(f"min_temp не может быть меньше -50, получено {min_temp}")
 
-        try:
-            max_temp = float(vals[3])
-            if max_temp > 60:
-                raise ValueError(f"max_temp не может превышать 60, получено {max_temp}")
-            if min_temp > max_temp:
-                raise ValueError(
-                    f"min_temp ({min_temp}) не может быть больше max_temp ({max_temp})"
-                )
-        except (ValueError, TypeError):
-            raise TypeError(
-                f"max_temp должно быть числом, получен {type(vals[3]).__name__}"
-            )
+        max_temp = float(vals[3])
+        if max_temp > 60:
+            raise ValueError(f"max_temp не может превышать 60, получено {max_temp}")
+        if min_temp > max_temp:
+            raise ValueError(f"min_temp ({min_temp}) не может быть больше max_temp ({max_temp})")
 
-        try:
-            min_humid = float(vals[4])
-            if min_humid < 0:
-                raise ValueError(
-                    f"min_humid не может быть меньше 0, получено {min_humid}"
-                )
-        except (ValueError, TypeError):
-            raise TypeError(
-                f"min_humid должно быть числом, получен {type(vals[4]).__name__}"
-            )
+        min_humid = float(vals[4])
+        if min_humid < 0:
+            raise ValueError(f"min_humid не может быть меньше 0, получено {min_humid}")
 
-        try:
-            max_humid = float(vals[5])
-            if max_humid > 100:
-                raise ValueError(
-                    f"max_humid не может превышать 100, получено {max_humid}"
-                )
-            if min_humid > max_humid:
-                raise ValueError(
-                    f"min_humid ({min_humid}) не может быть больше max_humid ({max_humid})"
-                )
-        except (ValueError, TypeError):
-            raise TypeError(
-                f"max_humid должно быть числом, получен {type(vals[5]).__name__}"
-            )
+        max_humid = float(vals[5])
+        if max_humid > 100:
+            raise ValueError(f"max_humid не может превышать 100, получено {max_humid}")
+        if min_humid > max_humid:
+            raise ValueError(f"min_humid ({min_humid}) не может быть больше max_humid ({max_humid})")
 
-        vals = [
-            str(vals[0]),
-            float(vals[1]),
-            float(vals[2]),
-            float(vals[3]),
-            float(vals[4]),
-            float(vals[5]),
-        ]
+        vals = [room_name, volume, min_temp, max_temp, min_humid, max_humid]
         self.insert_one(vals)
+        print("Помещение успешно добавлено!")
+
+    def manual_update(self):
+        """Редактирование помещения"""
+        print("\n--- Редактирование помещения ---")
+        room_id = self.select_room_by_user("Выберите помещение для редактирования")
+        if room_id is None:
+            return
+
+        # Получаем текущие данные
+        current = self.find_by_id(room_id)
+        if not current:
+            print("Помещение не найдено")
+            return
+
+        col_names = self.column_names_without_id()
+        current_values = list(current[1:])  # пропускаем id
+
+        print("\nТекущие значения (оставьте поле пустым, чтобы не менять):")
+        new_vals = []
+        for i, (col, cur_val) in enumerate(zip(col_names, current_values)):
+            print(f"{i + 1}. {col} (текущее: {cur_val})")
+            user_input = safety_input("=> Новое значение (Enter для пропуска): ")
+            if user_input.strip() == "":
+                new_vals.append(cur_val)
+            else:
+                new_vals.append(user_input)
+
+        # Валидация
+        room_name = str(new_vals[0])
+        if len(room_name) > 128:
+            raise ValueError(f"room_name превышает 128 символов: {len(room_name)}")
+
+        volume = float(new_vals[1])
+        if volume <= 0:
+            raise ValueError(f"volume должно быть > 0, получено {volume}")
+
+        min_temp = float(new_vals[2])
+        if min_temp < -50:
+            raise ValueError(f"min_temp не может быть меньше -50, получено {min_temp}")
+
+        max_temp = float(new_vals[3])
+        if max_temp > 60:
+            raise ValueError(f"max_temp не может превышать 60, получено {max_temp}")
+        if min_temp > max_temp:
+            raise ValueError(f"min_temp ({min_temp}) не может быть больше max_temp ({max_temp})")
+
+        min_humid = float(new_vals[4])
+        if min_humid < 0:
+            raise ValueError(f"min_humid не может быть меньше 0, получено {min_humid}")
+
+        max_humid = float(new_vals[5])
+        if max_humid > 100:
+            raise ValueError(f"max_humid не может превышать 100, получено {max_humid}")
+        if min_humid > max_humid:
+            raise ValueError(f"min_humid ({min_humid}) не может быть больше max_humid ({max_humid})")
+
+        new_vals = [float(x) if i > 0 else x for i, x in enumerate(new_vals)]
+        new_vals[0] = str(new_vals[0])
+
+        self.update_one(room_id, new_vals)
+        print("Помещение успешно обновлено!")
+
+    def manual_delete(self):
+        """Удаление помещения с каскадным удалением связанных стеллажей"""
+        print("\n--- Удаление помещения ---")
+        print("ВНИМАНИЕ! При удалении помещения будут удалены все стеллажи в нём!")
+        
+        room_id = self.select_room_by_user("Выберите помещение для удаления")
+        if room_id is None:
+            return
+
+        # Получаем имя помещения для подтверждения
+        current = self.find_by_id(room_id)
+        if not current:
+            print("Помещение не найдено")
+            return
+
+        print(f"\nВы уверены, что хотите удалить помещение '{current[1]}'?")
+        confirm = safety_input("Введите 'ДА' для подтверждения: ")
+        if confirm.upper() != "ДА":
+            print("Удаление отменено")
+            return
+
+        self.delete_one(room_id)
+        print("Помещение успешно удалено!")
