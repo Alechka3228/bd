@@ -2,18 +2,17 @@
 # (параметры передаются через класс конфиг).
 import psycopg2
 
-class DbConnection:
 
+class DbConnection:
     def __init__(self, config):
         self.dbname = config.dbname
         self.user = config.user
         self.password = config.password
         self.host = config.host
         self.prefix = config.dbtableprefix
-        self.conn = psycopg2.connect(dbname = self.dbname,
-                                    user = self.user, 
-                                    password = self.password,
-                                    host = self.host)
+        self.conn = psycopg2.connect(
+            dbname=self.dbname, user=self.user, password=self.password, host=self.host
+        )
 
     def __del__(self):
         if self.conn:
@@ -29,6 +28,4 @@ class DbConnection:
         result = cur.fetchall()
         cur.execute("DROP TABLE test")
         self.conn.commit()
-        return (result[0][0] == 1)
-        
-
+        return result[0][0] == 1

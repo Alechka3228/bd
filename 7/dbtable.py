@@ -1,4 +1,7 @@
 # Базовые действия с таблицами
+import sys
+
+sys.path.insert(0, "../dbconnection.py")
 
 from dbconnection import *
 
@@ -51,7 +54,7 @@ class DbTable:
 
     def insert_one(self, vals):
         for i in range(0, len(vals)):
-            if type(vals[i]) == str:
+            if type(vals[i]) is str:
                 vals[i] = "'" + vals[i] + "'"
             else:
                 vals[i] = str(vals[i])

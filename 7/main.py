@@ -1,9 +1,9 @@
 from dbconnection import DbConnection
 from help import check_done, display_menu, main_menu, print_no_option, table_menu
 from project_config import ProjectConfig
-from tables.dbtable import DbTable
-from tables.racks_table import RacksTable
-from tables.rooms_table import RoomsTable
+from dbtable import DbTable
+from racks_table import RacksTable
+from rooms_table import RoomsTable
 
 
 class Main:
@@ -63,7 +63,7 @@ class Main:
         display_menu("Rooms menu", table_menu)
         choice = input("=> ")
         if choice == "1":
-            pass
+            table.manual_insert()
         elif choice == "2":
             pass
         elif choice == "3":
@@ -82,7 +82,7 @@ class Main:
         display_menu("Racks menu", table_menu)
         choice = input("=> ")
         if choice == "1":
-            pass
+            table.manual_insert()
         elif choice == "2":
             pass
         elif choice == "3":

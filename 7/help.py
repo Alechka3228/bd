@@ -1,4 +1,5 @@
 from random import randrange
+import os
 
 
 def print_that_user_is_disabled(message: str) -> None:
@@ -399,11 +400,16 @@ def print_no_option():
     print("Hmm there is no options like that")
 
 
+def clear_terminal():
+    os.system("clear")
+
+
 def display_menu(heading, choices):
     print("#" + heading)
     for key, value in choices.items():
         print(f"{key}. {value}")
     print("+++++++++++++++++++++++++++++\n")
+
 
 main_heading = "Main menu"
 main_menu = {
