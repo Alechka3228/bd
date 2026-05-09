@@ -1,3 +1,22 @@
+# macOS
 .DS_Store
-/venv
-/__pycache__
+.AppleDouble
+.LSOverride
+._*
+
+# Python virtual environment
+/venv/
+venv/
+env/
+.env/
+ENV/
+
+# Python cache
+/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Alternative if you want to ignore all __pycache__ directories recursively
+**/__pycache__/
