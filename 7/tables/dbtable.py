@@ -2,6 +2,7 @@
 
 from dbconnection import *
 
+
 class DbTable:
     dbconn = None
 
@@ -15,15 +16,15 @@ class DbTable:
         return {"test": ["integer", "PRIMARY KEY"]}
 
     def column_names(self):
-        return sorted(self.columns().keys(), key = lambda x: x)
+        return list(self.columns().keys())
 
     def primary_key(self):
-        return ['id']
+        return ["id"]
 
     def column_names_without_id(self):
-        res = sorted(self.columns().keys(), key = lambda x: x)
-        if 'id' in res:
-            res.remove('id')
+        res = list(self.columns().keys())
+        if "id" in res:
+            res.remove("id")
         return res
 
     def table_constraints(self):
@@ -31,7 +32,7 @@ class DbTable:
 
     def create(self):
         sql = "CREATE TABLE " + self.table_name() + "("
-        arr = [k + " " + " ".join(v) for k, v in sorted(self.columns().items(), key = lambda x: x[0])]
+        arr = [k + " " + " ".join(v) for k, v in self.columns().items()]
         sql += ", ".join(arr + self.table_constraints())
         sql += ")"
         cur = self.dbconn.conn.cursor()
@@ -40,7 +41,9 @@ class DbTable:
         return
 
     def drop(self):
-        sql = "DROP TABLE IF EXISTS " + self.table_name() + " CASCADE"
+        sql = (
+            "DROP TABLE IF EXISTS " + self.table_name() + " CASCADE"
+        )  # ну чтобы наверняка
         cur = self.dbconn.conn.cursor()
         cur.execute(sql)
         self.dbconn.conn.commit()
@@ -66,7 +69,7 @@ class DbTable:
         sql += ", ".join(self.primary_key())
         cur = self.dbconn.conn.cursor()
         cur.execute(sql)
-        return cur.fetchone()        
+        return cur.fetchone()
 
     def last(self):
         sql = "SELECT * FROM " + self.table_name()
@@ -82,5 +85,12 @@ class DbTable:
         sql += ", ".join(self.primary_key())
         cur = self.dbconn.conn.cursor()
         cur.execute(sql)
-        return cur.fetchall()        
-        
+        return cur.fetchall()
+
+    def print_all(self):
+        table = self.all()
+        width = 10
+        print(" | ".join(f"{col[:width]:^{width}}" for col in self.column_names()))
+        print("-" * (len(self.column_names()) * (width + 3) - 3))
+        for line in table:
+            print(" | ".join(f"{str(val)[:width]:^{width}}" for val in line))
