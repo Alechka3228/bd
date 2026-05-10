@@ -1,5 +1,13 @@
 from dbconnection import DbConnection
-from help import check_done, display_menu, main_menu, print_no_option, table_menu, safety_input
+from help import (
+    check_done,
+    display_menu,
+    main_menu,
+    print_no_option,
+    safety_input,
+    rooms_menu_options,
+    racks_menu_options,
+)
 from project_config import ProjectConfig
 from dbtable import DbTable
 from racks_table import RacksTable
@@ -60,32 +68,15 @@ class Main:
     @check_done
     def rooms_menu(self):
         table = RoomsTable()
-        # Расширенное меню для помещений
-        rooms_menu_options = {
-            1: "Добавить помещение",
-            2: "Редактировать помещение",
-            3: "Удалить помещение",
-            4: "Показать все помещения",
-            0: "Назад"
-        }
         while True:
             display_menu("Помещения", rooms_menu_options)
             choice = safety_input("=> ")
             if choice == "1":
-                try:
-                    table.manual_insert()
-                except Exception as e:
-                    print(f"Ошибка: {e}")
+                table.manual_insert()
             elif choice == "2":
-                try:
-                    table.manual_update()
-                except Exception as e:
-                    print(f"Ошибка: {e}")
+                table.manual_update()
             elif choice == "3":
-                try:
-                    table.manual_delete()
-                except Exception as e:
-                    print(f"Ошибка: {e}")
+                table.manual_delete()
             elif choice == "4":
                 table.print_with_row_numbers()
             elif choice == "0":
@@ -98,47 +89,32 @@ class Main:
     def racks_menu(self):
         rooms_table = RoomsTable()
         racks_table = RacksTable()
-        
-        # Расширенное меню для стеллажей
-        racks_menu_options = {
-            1: "Показать стеллажи в помещении",
-            2: "Добавить стеллаж в помещение",
-            3: "Удалить стеллаж",
-            0: "Назад"
-        }
-        
+
         while True:
             display_menu("Стеллажи", racks_menu_options)
             choice = safety_input("=> ")
-            
             if choice == "1":
-                # Просмотр стеллажей по помещению
-                room_id = rooms_table.select_room_by_user("Выберите помещение для просмотра стеллажей")
+                room_id = rooms_table.select_room_by_user(
+                    "Выберите помещение для просмотра стеллажей"
+                )
                 if room_id:
                     room = rooms_table.find_by_id(room_id)
                     if room:
                         racks_table.print_racks_by_room(room_id, room[1])
                     else:
                         print("Помещение не найдено")
-            
             elif choice == "2":
-                # Добавление стеллажа с ключом помещения
-                room_id = rooms_table.select_room_by_user("Выберите помещение для добавления стеллажа")
+                room_id = rooms_table.select_room_by_user(
+                    "Выберите помещение для добавления стеллажа"
+                )
                 if room_id:
-                    try:
-                        racks_table.manual_insert_with_room(room_id)
-                    except Exception as e:
-                        print(f"Ошибка: {e}")
-            
+                    racks_table.manual_insert_with_room(room_id)
             elif choice == "3":
-                # Удаление стеллажа в выбранном помещении
-                room_id = rooms_table.select_room_by_user("Выберите помещение, в котором нужно удалить стеллаж")
+                room_id = rooms_table.select_room_by_user(
+                    "Выберите помещение, в котором нужно удалить стеллаж"
+                )
                 if room_id:
-                    try:
-                        racks_table.manual_delete_by_room(room_id)
-                    except Exception as e:
-                        print(f"Ошибка: {e}")
-            
+                    racks_table.manual_delete_by_room(room_id)
             elif choice == "0":
                 print("Возврат в главное меню")
                 return
